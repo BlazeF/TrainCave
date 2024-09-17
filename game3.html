@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Train Cave Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px auto;
+            max-width: 1000px;
+        }
+        #track {
+            position: relative;
+            width: 100%;
+            height: 60px;
+            background-color: #ccc;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        #cave {
+            position: absolute;
+            top: 0;
+            left: 45%;
+            width: 10%;
+            height: 100%;
+            background-color: #444;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1em;
+        }
+        #engine {
+            position: absolute;
+            top: 0;
+            width: 8%;
+            height: 100%;
+            background-color: red;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1em;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        #result, #score {
+            font-size: 1.5em;
+            margin-top: 20px;
+        }
+        @media (max-width: 600px) {
+            #track {
+                height: 50px;
+            }
+            #cave, #engine {
+                height: 50px;
+                font-size: 0.8em;
+            }
+            button {
+                padding: 8px 16px;
+                font-size: 0.8em;
+            }
+            #result, #score {
+                font-size: 1.2em;
+            }
+        }
+        @media (min-width: 601px) and (max-width: 1000px) {
+            #track {
+                height: 55px;
+            }
+            #cave, #engine {
+                height: 55px;
+                font-size: 0.9em;
+            }
+            button {
+                padding: 9px 18px;
+                font-size: 0.9em;
+            }
+            #result, #score {
+                font-size: 1.3em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Train Cave Game</h1>
+    <button id="startBtn">Start</button>
+    <div id="track">
+        <div id="cave">Cave</div>
+        <div id="engine">Engine</div>
+    </div>
+    <button id="stopBtn" disabled>Stop</button>
+    <div id="result"></div>
+    <div id="score">Score: 0/0</div>
+
+    <script>
+        const engine = document.getElementById('engine');
+        const stopBtn = document.getElementById('stopBtn');
+        const resultDiv = document.getElementById('result');
+        const scoreDiv = document.getElementById('score');
+        const startBtn = document.getElementById('startBtn');
+
+        let engineSpeed = 25; // Speed of the engine in pixels per frame
+        let direction = 1; // 1 = right, -1 = left
+        let enginePosition = 0;
+        let gameActive = false;
+        let correct = 0; // Track correct guesses
+        let totalAttempts = 0; // Track total guesses
+        let gameTime = 180000; // 3 minutes in milliseconds
+        let gameInterval;
+        let animationFrameId; // To store the ID of requestAnimationFrame
+
+        // Cave's position (45% to 55% of the track)
+        const caveStart = 45; // Cave starts at 45%
+        const caveEnd = 55; // Cave ends at 55%
+
+        function startGame() {
+            resetGame();
+            gameActive = true;
+            stopBtn.disabled = false;
+            enginePosition = direction === 1 ? 0 : 92; // Start from either left or right
+            engine.style.left = enginePosition + '%';
+            moveEngine();
+            gameInterval = setTimeout(endGame, gameTime); // End the game after 3 minutes
+        }
+
+        function moveEngine() {
+            if (!gameActive) return;
+
+            enginePosition += direction * engineSpeed / 100; // Moving the engine
+            engine.style.left = enginePosition + '%';
+
+            // If the engine goes off-screen, start a new engine
+            if (enginePosition > 100 || enginePosition < -8) {
+                resultDiv.textContent = 'Missed! The train passed.';
+                totalAttempts++;
+                updateScore();
+                startNextTrain();
+            } else {
+                animationFrameId = requestAnimationFrame(moveEngine); // Continue moving the engine
+            }
+        }
+
+        function checkPosition() {
+            const engineStart = enginePosition;
+            const engineEnd = enginePosition + 8; // Engine length is 8%
+
+            if (engineStart >= caveStart && engineEnd <= caveEnd) {
+                resultDiv.textContent = 'Correct! The engine was fully in the cave.';
+                correct++;
+            } else {
+                resultDiv.textContent = 'Wrong! The engine was not fully in the cave.';
+            }
+
+            totalAttempts++;
+            updateScore(); // Update score after each attempt
+            startNextTrain(); // Start the next train immediately after result
+        }
+
+        function updateScore() {
+            scoreDiv.textContent = `Score: ${correct}/${totalAttempts}`;
+        }
+
+        function startNextTrain() {
+            cancelAnimationFrame(animationFrameId); // Cancel any ongoing animation
+            direction = Math.random() < 0.5 ? 1 : -1; // Randomize direction for the new train
+            enginePosition = direction === 1 ? 0 : 92; // Set initial position based on direction
+            engine.style.left = enginePosition + '%';
+            resultDiv.textContent = ''; // Clear the result
+            moveEngine(); // Start moving the new train
+        }
+
+        function resetGame() {
+            stopBtn.disabled = false;
+            startBtn.disabled = true;
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearTimeout(gameInterval);
+            cancelAnimationFrame(animationFrameId); // Stop any ongoing animation
+            resultDiv.textContent = 'Game Over! 3 minutes completed.';
+            stopBtn.disabled = true;
+            startBtn.disabled = false;
+        }
+
+        // Start game when the start button is clicked
+        startBtn.addEventListener('click', () => {
+            direction = Math.random() < 0.5 ? 1 : -1; // Randomize direction
+            startBtn.disabled = true;
+            resultDiv.textContent = '';
+            startGame();
+        });
+
+        // Stop the train when the stop button is clicked
+        stopBtn.addEventListener('click', checkPosition);
+    </script>
+
+</body>
+</html>
