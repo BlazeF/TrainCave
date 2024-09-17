@@ -22,8 +22,8 @@
         #cave {
             position: absolute;
             top: 0;
-            left: 45%;
-            width: 10%;
+            left: 40%;
+            width: 20%;
             height: 100%;
             background-color: #444;
             display: flex;
@@ -35,7 +35,7 @@
         #engine {
             position: absolute;
             top: 0;
-            width: 8%;
+            width: 16%; /* Updated engine width to 16% */
             height: 100%;
             background-color: red;
             display: flex;
@@ -106,7 +106,7 @@
         const scoreDiv = document.getElementById('score');
         const startBtn = document.getElementById('startBtn');
 
-        let engineSpeed = 28; // Speed of the engine in pixels per frame
+        let engineSpeed = 38; // Speed of the engine in pixels per frame
         let direction = 1; // 1 = right, -1 = left
         let enginePosition = 0;
         let gameActive = false;
@@ -116,15 +116,15 @@
         let gameInterval;
         let animationFrameId; // To store the ID of requestAnimationFrame
 
-        // Cave's position (45% to 55% of the track)
-        const caveStart = 45; // Cave starts at 45%
-        const caveEnd = 55; // Cave ends at 55%
+        // Cave's position (40% to 60% of the track) - 10% more in width
+        const caveStart = 40; // Cave starts at 40%
+        const caveEnd = 60; // Cave ends at 60%
 
         function startGame() {
             resetGame();
             gameActive = true;
             stopBtn.disabled = false;
-            enginePosition = direction === 1 ? 0 : 92; // Start from either left or right
+            enginePosition = direction === 1 ? 0 : 84; // Start from either left or right
             engine.style.left = enginePosition + '%';
             moveEngine();
             gameInterval = setTimeout(endGame, gameTime); // End the game after 3 minutes
@@ -137,7 +137,7 @@
             engine.style.left = enginePosition + '%';
 
             // If the engine goes off-screen, start a new engine
-            if (enginePosition > 100 || enginePosition < -8) {
+            if (enginePosition > 100 || enginePosition < -16) {
                 resultDiv.textContent = 'Missed! The train passed.';
                 totalAttempts++;
                 updateScore();
@@ -149,7 +149,7 @@
 
         function checkPosition() {
             const engineStart = enginePosition;
-            const engineEnd = enginePosition + 8; // Engine length is 8%
+            const engineEnd = enginePosition + 16; // Engine length is 16%
 
             if (engineStart >= caveStart && engineEnd <= caveEnd) {
                 resultDiv.textContent = 'Correct! The engine was fully in the cave.';
@@ -170,7 +170,7 @@
         function startNextTrain() {
             cancelAnimationFrame(animationFrameId); // Cancel any ongoing animation
             direction = Math.random() < 0.5 ? 1 : -1; // Randomize direction for the new train
-            enginePosition = direction === 1 ? 0 : 92; // Set initial position based on direction
+            enginePosition = direction === 1 ? 0 : 84; // Set initial position based on direction
             engine.style.left = enginePosition + '%';
             resultDiv.textContent = ''; // Clear the result
             moveEngine(); // Start moving the new train
